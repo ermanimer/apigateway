@@ -27,22 +27,28 @@ func TestReadFromYaml(t *testing.T) {
 			expectedErr: os.ErrNotExist,
 		},
 		{
-			name:        "empty config",
+			name:        "empty config file",
 			path:        emptyPath,
 			expected:    Config{},
 			expectedErr: io.EOF,
 		},
 		{
-			name:        "valid config",
+			name:        "valid config file",
 			path:        validPath,
 			expected:    validConfig,
 			expectedErr: nil,
 		},
 		{
-			name:        "missing config",
+			name:        "missing config file",
 			path:        missingPath,
 			expected:    Config{},
 			expectedErr: ErrMissingConfig,
+		},
+		{
+			name:        "invalid config file",
+			path:        createInvalidConfigFile(t),
+			expected:    Config{},
+			expectedErr: ErrInvalidConfig,
 		},
 	}
 	for _, test := range tests {
@@ -50,6 +56,97 @@ func TestReadFromYaml(t *testing.T) {
 			actual, err := ReadFromYaml(test.path)
 			require.ErrorIs(t, err, test.expectedErr)
 			require.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestEnsureServerDefaults(t *testing.T) {
+	expected := defaultServer
+	actual := ensureServerDefaults(Server{})
+	require.Equal(t, expected, actual)
+}
+
+func TestValidateAddress(t *testing.T) {
+	tests := []struct {
+		name        string
+		address     string
+		expectedErr error
+	}{
+		{
+			name:        "valid",
+			address:     ":8080",
+			expectedErr: nil,
+		},
+		{
+			name:        "invalid",
+			address:     "invalid",
+			expectedErr: ErrInvalidConfig,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateAddress(test.address)
+			require.ErrorIs(t, err, test.expectedErr)
+		})
+	}
+}
+
+func TestValidatePattern(t *testing.T) {
+	tests := []struct {
+		name      string
+		pattern   string
+		expectErr bool
+	}{
+		{
+			name:      "valid",
+			pattern:   "/service1/",
+			expectErr: false,
+		},
+		{
+			name:      "invalid prefix",
+			pattern:   "invalid/",
+			expectErr: true,
+		},
+		{
+			name:      "invalid suffix",
+			pattern:   "/invalid",
+			expectErr: true,
+		},
+		{
+			name:      "invalid length",
+			pattern:   "//",
+			expectErr: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validatePattern(test.pattern)
+			require.Equal(t, test.expectErr, err != nil)
+		})
+	}
+}
+
+func TestValidateURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		url       string
+		expectErr bool
+	}{
+		{
+			name:      "valid",
+			url:       "http://localhost:8081",
+			expectErr: false,
+		},
+		{
+			name:      "invalid",
+			url:       "://localhost:8081",
+			expectErr: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateURL(test.url)
+			require.Equal(t, test.expectErr, err != nil)
 		})
 	}
 }
@@ -63,24 +160,40 @@ func TestValidateUpstream(t *testing.T) {
 		{
 			name: "valid",
 			upstream: Upstream{
-				Pattern: "/api/",
-				URL:     "http://localhost:8080",
+				Pattern: "/service1/",
+				URL:     "http://localhost:8081",
 			},
 			expectedErr: nil,
 		},
 		{
 			name: "missing pattern",
 			upstream: Upstream{
-				URL: "http://localhost:8080",
+				URL: "http://localhost:8081",
 			},
 			expectedErr: ErrMissingConfig,
 		},
 		{
+			name: "invalid pattern",
+			upstream: Upstream{
+				Pattern: "invalid",
+				URL:     "http://localhost:8081",
+			},
+			expectedErr: ErrInvalidConfig,
+		},
+		{
 			name: "missing url",
 			upstream: Upstream{
-				Pattern: "/api/",
+				Pattern: "/service1/",
 			},
 			expectedErr: ErrMissingConfig,
+		},
+		{
+			name: "invalid url",
+			upstream: Upstream{
+				Pattern: "/service1/",
+				URL:     "://localhost:8081",
+			},
+			expectedErr: ErrInvalidConfig,
 		},
 	}
 	for _, test := range tests {
@@ -101,8 +214,8 @@ func TestValidateUpstreams(t *testing.T) {
 			name: "valid",
 			upstreams: []Upstream{
 				{
-					Pattern: "/api/",
-					URL:     "http://localhost:8080",
+					Pattern: "/service1/",
+					URL:     "http://localhost:8081",
 				},
 			},
 			expectedErr: nil,
@@ -113,16 +226,14 @@ func TestValidateUpstreams(t *testing.T) {
 			expectedErr: ErrMissingConfig,
 		},
 		{
-			name: "missing pattern and url",
+			name: "invalid upstreams",
 			upstreams: []Upstream{
 				{
-					URL: "http://localhost:8080",
-				},
-				{
-					Pattern: "/api/",
+					Pattern: "invalid",
+					URL:     "://localhost:8081",
 				},
 			},
-			expectedErr: ErrMissingConfig,
+			expectedErr: ErrInvalidConfig,
 		},
 	}
 	for _, test := range tests {
@@ -133,10 +244,67 @@ func TestValidateUpstreams(t *testing.T) {
 	}
 }
 
-func TestEnsureServerDefaults(t *testing.T) {
-	expected := defaultServer
-	actual := ensureServerDefaults(Server{})
-	require.Equal(t, expected, actual)
+func TestValidate(t *testing.T) {
+	tests := []struct {
+		name        string
+		server      Server
+		upstreams   []Upstream
+		expectedErr error
+	}{
+		{
+			name: "valid",
+			server: Server{
+				Address: ":8080",
+			},
+			upstreams: []Upstream{
+				{
+					Pattern: "/service1/",
+					URL:     "http://localhost:8081",
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "invalid server",
+			server: Server{
+				Address: "invalid",
+			},
+			upstreams: []Upstream{
+				{
+					Pattern: "/service1/",
+					URL:     "http://localhost:8081",
+				},
+			},
+			expectedErr: ErrInvalidConfig,
+		},
+		{
+			name: "missing upstreams",
+			server: Server{
+				Address: ":8080",
+			},
+			upstreams:   nil,
+			expectedErr: ErrMissingConfig,
+		},
+		{
+			name: "invalid upstreams",
+			server: Server{
+				Address: ":8080",
+			},
+			upstreams: []Upstream{
+				{
+					Pattern: "invalid",
+					URL:     "://localhost:8081",
+				},
+			},
+			expectedErr: ErrInvalidConfig,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validate(test.server, test.upstreams)
+			require.ErrorIs(t, err, test.expectedErr)
+		})
+	}
 }
 
 func createConfigFile(t *testing.T, config Config) string {
@@ -154,8 +322,8 @@ func createValidConfigFile(t *testing.T) (string, Config) {
 		Server: defaultServer,
 		Upstreams: []Upstream{
 			{
-				Pattern: "/api/",
-				URL:     "http://localhost:8080",
+				Pattern: "/service1/",
+				URL:     "http://localhost:8081",
 			},
 		},
 	}
@@ -168,10 +336,26 @@ func createMissingConfigFile(t *testing.T) string {
 		Server: defaultServer,
 		Upstreams: []Upstream{
 			{
-				URL: "http://localhost:8080",
+				URL: "http://localhost:8081",
 			},
 			{
-				Pattern: "/api/",
+				Pattern: "/service1/",
+			},
+		},
+	}
+	path := createConfigFile(t, config)
+	return path
+}
+
+func createInvalidConfigFile(t *testing.T) string {
+	config := Config{
+		Server: Server{
+			Address: "invalid",
+		},
+		Upstreams: []Upstream{
+			{
+				Pattern: "invalid",
+				URL:     ":://localhost:8081",
 			},
 		},
 	}
