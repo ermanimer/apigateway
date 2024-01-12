@@ -48,34 +48,29 @@ func TestNew(t *testing.T) {
 }
 
 func TestRegisterHandler(t *testing.T) {
-	// create and register a mock handler
 	pattern := "/"
 	expected := http.StatusOK
 	handler, _ := newMockHandler(expected)
+
 	server := New(config.Server{})
 	server.RegisterHandler(pattern, handler)
-
-	// create and handle a request with the registered handler
 	request := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	responseRecorder := httptest.NewRecorder()
 	server.server.Handler.ServeHTTP(responseRecorder, request)
-	actual := responseRecorder.Code
+	actual := responseRecorder.Result().StatusCode
 	require.Equal(t, expected, actual)
 }
 
 func TestStartAndStop(t *testing.T) {
-	// get a test address
 	address, err := getTestAddress()
 	require.NoError(t, err)
 
-	// create a server
 	shutdownTimeout := 1 * time.Second
 	server := New(config.Server{
 		Address:         address,
 		ShutdownTimeout: shutdownTimeout,
 	})
 
-	// create and register a mock handler
 	expected := http.StatusOK
 	path := "/"
 	handler, done := newMockHandler(expected)
@@ -87,7 +82,7 @@ func TestStartAndStop(t *testing.T) {
 		require.ErrorIs(t, err, http.ErrServerClosed)
 	}()
 
-	// wait for the server to start, send a request and check the response
+	// wait for the server to start and then send a request
 	go func() {
 		for {
 			time.Sleep(100 * time.Millisecond)
@@ -103,15 +98,21 @@ func TestStartAndStop(t *testing.T) {
 		}
 	}()
 
-	// wait for the request to be handled
+	// wait for the request to be handled and then stop the server
 	<-done
-
-	// stop the server and check the shutdown duration
 	err = server.Shutdown()
 	require.NoError(t, err)
 }
 
-// mock handler
+func getTestAddress() (string, error) {
+	listener, err := net.Listen("tcp", "127.0.0.1:")
+	if err != nil {
+		return "", err
+	}
+	defer listener.Close()
+	return listener.Addr().String(), nil
+}
+
 type mockHandler struct {
 	statusCode int
 	done       chan struct{}
@@ -129,13 +130,4 @@ func newMockHandler(statusCode int) (http.Handler, chan struct{}) {
 func (h *mockHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(h.statusCode)
 	close(h.done)
-}
-
-func getTestAddress() (string, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:")
-	if err != nil {
-		return "", err
-	}
-	defer listener.Close()
-	return listener.Addr().String(), nil
 }
