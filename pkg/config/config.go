@@ -13,11 +13,11 @@ import (
 
 type Server struct {
 	Address         string        `yaml:"address"`
-	ReadTimeout     time.Duration `yaml:"readTimeout"`
-	WriteTimeout    time.Duration `yaml:"writeTimeout"`
-	IdleTimeout     time.Duration `yaml:"idleTimeout"`
-	MaxHeaderBytes  int           `yaml:"maxHeaderBytes"`
-	ShutdownTimeout time.Duration `yaml:"shutdownTimeout"`
+	ReadTimeout     time.Duration `yaml:"read_timeout"`
+	WriteTimeout    time.Duration `yaml:"write_timeout"`
+	IdleTimeout     time.Duration `yaml:"idle_timeout"`
+	MaxHeaderBytes  int           `yaml:"max_header_bytes"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
 }
 
 type Upstream struct {

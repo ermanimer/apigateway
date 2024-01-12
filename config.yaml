@@ -1,0 +1,14 @@
+server:
+  address: :8080
+  read_timeout: 5s
+  write_timeout: 10s
+  idle_timeout: 120s
+  max_header_bytes: 1048576
+  shutdown_timeout: 10s
+upstreams:
+  - pattern: /service1/
+    strip_prefix: true
+    url: http://localhost:8081
+  - pattern: /service2/
+    strip_prefix: false
+    url: http://localhost:8082

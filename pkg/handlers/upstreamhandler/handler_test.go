@@ -11,10 +11,10 @@ import (
 
 func TestNew(t *testing.T) {
 	expected := http.StatusOK
-	server1 := newTestServer("/server1/endpoint", expected)
-	defer server1.Close()
-	server2 := newTestServer("/endpoint", expected)
-	defer server2.Close()
+	service1 := newTestServer("/service1/endpoint", expected)
+	defer service1.Close()
+	service2 := newTestServer("/endpoint", expected)
+	defer service2.Close()
 	tests := []struct {
 		name     string
 		upstream config.Upstream
@@ -23,20 +23,20 @@ func TestNew(t *testing.T) {
 		{
 			name: "with prefix",
 			upstream: config.Upstream{
-				Pattern:     "/server1/",
+				Pattern:     "/service1/",
 				StripPrefix: false,
-				URL:         server1.URL,
+				URL:         service1.URL,
 			},
-			address: "/server1/endpoint",
+			address: "/service1/endpoint",
 		},
 		{
 			name: "strip prefix",
 			upstream: config.Upstream{
-				Pattern:     "/server2/",
+				Pattern:     "/service2/",
 				StripPrefix: true,
-				URL:         server2.URL,
+				URL:         service2.URL,
 			},
-			address: "/server2/endpoint",
+			address: "/service2/endpoint",
 		},
 	}
 	for _, tt := range tests {
