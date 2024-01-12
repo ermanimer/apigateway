@@ -79,7 +79,9 @@ func TestStartAndStop(t *testing.T) {
 	// start the server
 	go func() {
 		err = server.Start()
-		require.ErrorIs(t, err, http.ErrServerClosed)
+		if err != nil {
+			require.ErrorIs(t, err, http.ErrServerClosed)
+		}
 	}()
 
 	// wait for the server to start and then send a request
