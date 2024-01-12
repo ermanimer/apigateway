@@ -10,11 +10,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestReadConfigFromYaml(t *testing.T) {
+func TestReadFromYaml(t *testing.T) {
 	validPath, validConfig := createValidConfigFile(t)
 	missingPath := createMissingConfigFile(t)
 	emptyPath := createEmptyFile(t)
-
 	tests := []struct {
 		name        string
 		path        string
@@ -48,7 +47,7 @@ func TestReadConfigFromYaml(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := ReadConfigFromYaml(test.path)
+			actual, err := ReadFromYaml(test.path)
 			require.ErrorIs(t, err, test.expectedErr)
 			require.Equal(t, test.expected, actual)
 		})

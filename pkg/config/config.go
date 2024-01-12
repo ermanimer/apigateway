@@ -18,9 +18,9 @@ type Server struct {
 }
 
 type Upstream struct {
-	Pattern    string `yaml:"pattern"`
-	TrimPrefix bool   `yaml:"trim_pefix"`
-	URL        string `yaml:"url"`
+	Pattern     string `yaml:"pattern"`
+	StripPrefix bool   `yaml:"strip_prefix"`
+	URL         string `yaml:"url"`
 }
 
 type Config struct {
@@ -39,7 +39,7 @@ var defaultServer = Server{
 
 var ErrMissingConfig = fmt.Errorf("missing config")
 
-func ReadConfigFromYaml(path string) (Config, error) {
+func ReadFromYaml(path string) (Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return Config{}, err
