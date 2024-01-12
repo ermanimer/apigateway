@@ -46,38 +46,38 @@ func ReadConfigFromYaml(path string) (Config, error) {
 	}
 	defer file.Close()
 
-	var config Config
-	err = yaml.NewDecoder(file).Decode(&config)
+	var c Config
+	err = yaml.NewDecoder(file).Decode(&c)
 	if err != nil {
 		return Config{}, err
 	}
 
-	err = validateUpstreams(config.Upstreams)
+	err = validateUpstreams(c.Upstreams)
 	if err != nil {
 		return Config{}, err
 	}
 
-	config.Server = ensureServerDefaults(config.Server)
+	c.Server = ensureServerDefaults(c.Server)
 
-	return config, nil
+	return c, nil
 }
 
-func validateUpstream(index int, config Upstream) error {
-	if len(config.Pattern) == 0 {
+func validateUpstream(index int, u Upstream) error {
+	if len(u.Pattern) == 0 {
 		return fmt.Errorf("%w: services[%d].pattern", ErrMissingConfig, index)
 	}
-	if len(config.URL) == 0 {
+	if len(u.URL) == 0 {
 		return fmt.Errorf("%w: services[%d].url", ErrMissingConfig, index)
 	}
 	return nil
 }
 
-func validateUpstreams(configs []Upstream) error {
-	if len(configs) == 0 {
+func validateUpstreams(uu []Upstream) error {
+	if len(uu) == 0 {
 		return fmt.Errorf("%w: services", ErrMissingConfig)
 	}
-	for index, config := range configs {
-		err := validateUpstream(index, config)
+	for index, u := range uu {
+		err := validateUpstream(index, u)
 		if err != nil {
 			return err
 		}
@@ -85,24 +85,24 @@ func validateUpstreams(configs []Upstream) error {
 	return nil
 }
 
-func ensureServerDefaults(config Server) Server {
-	if len(config.Address) == 0 {
-		config.Address = defaultServer.Address
+func ensureServerDefaults(s Server) Server {
+	if len(s.Address) == 0 {
+		s.Address = defaultServer.Address
 	}
-	if config.ReadTimeout == 0 {
-		config.ReadTimeout = defaultServer.ReadTimeout
+	if s.ReadTimeout == 0 {
+		s.ReadTimeout = defaultServer.ReadTimeout
 	}
-	if config.WriteTimeout == 0 {
-		config.WriteTimeout = defaultServer.WriteTimeout
+	if s.WriteTimeout == 0 {
+		s.WriteTimeout = defaultServer.WriteTimeout
 	}
-	if config.IdleTimeout == 0 {
-		config.IdleTimeout = defaultServer.IdleTimeout
+	if s.IdleTimeout == 0 {
+		s.IdleTimeout = defaultServer.IdleTimeout
 	}
-	if config.MaxHeaderBytes == 0 {
-		config.MaxHeaderBytes = defaultServer.MaxHeaderBytes
+	if s.MaxHeaderBytes == 0 {
+		s.MaxHeaderBytes = defaultServer.MaxHeaderBytes
 	}
-	if config.ShutdownTimeout == 0 {
-		config.ShutdownTimeout = defaultServer.ShutdownTimeout
+	if s.ShutdownTimeout == 0 {
+		s.ShutdownTimeout = defaultServer.ShutdownTimeout
 	}
-	return config
+	return s
 }

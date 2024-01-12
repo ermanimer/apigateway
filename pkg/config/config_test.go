@@ -11,9 +11,9 @@ import (
 )
 
 func TestReadConfigFromYaml(t *testing.T) {
-	validconfigPath, validConfig := createValidConfig(t)
-	missingConfigPath := createMissingConfig(t)
-	emptyConfigPath := createEmptyConfigFile(t)
+	validPath, validConfig := createValidConfigFile(t)
+	missingPath := createMissingConfigFile(t)
+	emptyPath := createEmptyFile(t)
 
 	tests := []struct {
 		name        string
@@ -29,19 +29,19 @@ func TestReadConfigFromYaml(t *testing.T) {
 		},
 		{
 			name:        "empty config",
-			path:        emptyConfigPath,
+			path:        emptyPath,
 			expected:    Config{},
 			expectedErr: io.EOF,
 		},
 		{
 			name:        "valid config",
-			path:        validconfigPath,
+			path:        validPath,
 			expected:    validConfig,
 			expectedErr: nil,
 		},
 		{
 			name:        "missing config",
-			path:        missingConfigPath,
+			path:        missingPath,
 			expected:    Config{},
 			expectedErr: ErrMissingConfig,
 		},
@@ -140,7 +140,7 @@ func TestEnsureServerDefaults(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
-func createTempConfigFile(t *testing.T, config Config) string {
+func createConfigFile(t *testing.T, config Config) string {
 	path := path.Join(t.TempDir(), "config.yaml")
 	file, err := os.Create(path)
 	require.NoError(t, err)
@@ -150,7 +150,7 @@ func createTempConfigFile(t *testing.T, config Config) string {
 	return path
 }
 
-func createValidConfig(t *testing.T) (string, Config) {
+func createValidConfigFile(t *testing.T) (string, Config) {
 	config := Config{
 		Server: defaultServer,
 		Upstreams: []Upstream{
@@ -160,11 +160,11 @@ func createValidConfig(t *testing.T) (string, Config) {
 			},
 		},
 	}
-	path := createTempConfigFile(t, config)
+	path := createConfigFile(t, config)
 	return path, config
 }
 
-func createMissingConfig(t *testing.T) string {
+func createMissingConfigFile(t *testing.T) string {
 	config := Config{
 		Server: defaultServer,
 		Upstreams: []Upstream{
@@ -176,12 +176,12 @@ func createMissingConfig(t *testing.T) string {
 			},
 		},
 	}
-	path := createTempConfigFile(t, config)
+	path := createConfigFile(t, config)
 	return path
 }
 
-func createEmptyConfigFile(t *testing.T) string {
-	path := path.Join(t.TempDir(), "config.yaml")
+func createEmptyFile(t *testing.T) string {
+	path := path.Join(t.TempDir(), "empty")
 	file, err := os.Create(path)
 	require.NoError(t, err)
 	defer file.Close()
