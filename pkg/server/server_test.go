@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"syscall"
 	"testing"
 	"time"
 
@@ -78,9 +79,9 @@ func TestStartAndStop(t *testing.T) {
 
 	// start the server
 	go func() {
-		err = server.Start()
-		if err != nil {
-			require.ErrorIs(t, err, http.ErrServerClosed)
+		startErr := server.Start()
+		if startErr != nil {
+			require.ErrorIs(t, startErr, http.ErrServerClosed)
 		}
 	}()
 
@@ -88,13 +89,11 @@ func TestStartAndStop(t *testing.T) {
 	go func() {
 		for {
 			time.Sleep(100 * time.Millisecond)
-			var request *http.Request
-			request, err = http.NewRequest(http.MethodGet, "http://"+address+path, http.NoBody)
-			require.NoError(t, err)
-			var response *http.Response
-			response, err = http.DefaultClient.Do(request)
-			if err != nil {
-				require.ErrorIs(t, err, net.ErrClosed)
+			request, requestErr := http.NewRequest(http.MethodGet, "http://"+address+path, http.NoBody)
+			require.NoError(t, requestErr)
+			response, responseErr := http.DefaultClient.Do(request)
+			if responseErr != nil {
+				require.ErrorIs(t, responseErr, syscall.ECONNREFUSED)
 				continue
 			}
 			require.Equal(t, expected, response.StatusCode)
