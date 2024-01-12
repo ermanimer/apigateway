@@ -8,7 +8,7 @@ server:
 upstreams:
   - pattern: /service1/
     strip_prefix: true
-    url: http://localhost:8081
+    url: http://service1:8080
   - pattern: /service2/
     strip_prefix: false
-    url: http://localhost:8082
+    url: http://service2:8080
