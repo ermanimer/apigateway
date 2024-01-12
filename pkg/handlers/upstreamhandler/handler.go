@@ -9,7 +9,7 @@ import (
 	"github.com/ermanimer/apigateway/pkg/config"
 )
 
-func Make(c config.Upstream) http.Handler {
+func New(c config.Upstream) http.Handler {
 	url, _ := url.Parse(c.URL)
 	var handler http.Handler = httputil.NewSingleHostReverseProxy(url)
 	if c.StripPrefix {

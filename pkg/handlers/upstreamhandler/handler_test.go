@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMake(t *testing.T) {
+func TestNew(t *testing.T) {
 	expected := http.StatusOK
 	server1 := newTestServer("/server1/endpoint", expected)
 	defer server1.Close()
@@ -41,7 +41,7 @@ func TestMake(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := Make(tt.upstream)
+			handler := New(tt.upstream)
 			request := httptest.NewRequest(http.MethodGet, tt.address, http.NoBody)
 			responseRecorder := httptest.NewRecorder()
 			handler.ServeHTTP(responseRecorder, request)
