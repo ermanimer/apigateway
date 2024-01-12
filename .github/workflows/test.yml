@@ -37,7 +37,7 @@ jobs:
 
       # Unit Tests
       - name: Run Unit Tests
-        run: go test -v ./...
+        run: go test -v -coverprofile=coverage.out ./...
 
       # Codecov
       - name: Upload coverage reports to Codecov
