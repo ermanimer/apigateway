@@ -32,7 +32,11 @@ func (s *Server) RegisterHandler(pattern string, handler http.Handler) {
 }
 
 func (s *Server) Start() error {
-	return s.server.ListenAndServe()
+	err := s.server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
+	return nil
 }
 
 func (s *Server) Shutdown() error {
