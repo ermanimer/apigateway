@@ -14,6 +14,6 @@ func TestServeHTTP(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	responseRecorder := httptest.NewRecorder()
 	handler.ServeHTTP(responseRecorder, request)
-	actual := responseRecorder.Code
+	actual := responseRecorder.Result().StatusCode
 	require.Equal(t, expected, actual)
 }
