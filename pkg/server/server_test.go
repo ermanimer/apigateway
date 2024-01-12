@@ -78,7 +78,7 @@ func TestStartAndStop(t *testing.T) {
 
 	// start the server
 	go func() {
-		err := server.Start()
+		err = server.Start()
 		require.ErrorIs(t, err, http.ErrServerClosed)
 	}()
 
@@ -86,7 +86,8 @@ func TestStartAndStop(t *testing.T) {
 	go func() {
 		for {
 			time.Sleep(100 * time.Millisecond)
-			request, err := http.NewRequest(http.MethodGet, "http://"+address+path, http.NoBody)
+			var request *http.Request
+			request, err = http.NewRequest(http.MethodGet, "http://"+address+path, http.NoBody)
 			require.NoError(t, err)
 			var response *http.Response
 			response, err = http.DefaultClient.Do(request)

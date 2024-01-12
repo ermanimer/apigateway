@@ -14,7 +14,7 @@ func New(c config.Upstream) http.Handler {
 	var handler http.Handler = httputil.NewSingleHostReverseProxy(url)
 	if c.StripPrefix {
 		prefix := strings.TrimSuffix(c.Pattern, "/")
-		handler = http.StripPrefix(prefix, handler.(http.Handler))
+		handler = http.StripPrefix(prefix, handler)
 	}
 	return handler
 }
