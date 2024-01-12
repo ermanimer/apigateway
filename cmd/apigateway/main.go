@@ -15,12 +15,14 @@ import (
 	"github.com/ermanimer/apigateway/pkg/server"
 )
 
+const configPath = "config.yaml"
+
 func main() {
 	// create the l
 	l := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	// read the config
-	c, err := config.ReadFromYaml("config.yaml")
+	c, err := config.ReadFromYaml(configPath)
 	if err != nil {
 		l.Error("failed to read config", "error", err)
 	}
@@ -30,11 +32,12 @@ func main() {
 
 	// register the health check handler
 	s.RegisterHandler("/health-check", healthcheckhandler.New())
+	l.Info("health check handler is registered", "pattern", "/health-check")
 
 	// register upstream handlers
 	for _, u := range c.Upstreams {
 		s.RegisterHandler(u.Pattern, upstreamhandler.New(u))
-		l.Info("upstream handler is registered", "pattern", u.Pattern, "url", u.URL)
+		l.Info("upstream handler is registered", "pattern", u.Pattern, "strip_prefix", u.StripPrefix, "url", u.URL)
 	}
 
 	// start the server
@@ -42,6 +45,7 @@ func main() {
 	defer cancel()
 
 	go func() {
+		l.Info("server is starting", "address", c.Server.Address)
 		err = s.Start()
 		if err != nil && errors.Is(err, http.ErrServerClosed) {
 			l.Error("failed to start server", "error", err)
@@ -55,4 +59,5 @@ func main() {
 	if err != nil {
 		l.Error("failed to shutdown server", "error", err)
 	}
+	l.Info("server stopped")
 }
