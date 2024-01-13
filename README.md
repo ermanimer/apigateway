@@ -74,7 +74,7 @@ networks:
 
 # Contributing to the Project
 
-We welcome and appreciate contributions from the community. Here's how you can contribute:
+Here's how you can contribute:
 
 1. Fork the repository to your own GitHub account.
 2. Clone the forked repository to your local machine.
@@ -83,7 +83,7 @@ We welcome and appreciate contributions from the community. Here's how you can c
 5. Push your changes to your forked repository.
 6. Submit a pull request from your forked repository to our main repository.
 
-Please ensure your code adheres to our coding standards and that your commit messages are descriptive.
+Thank you for your interest in contributing!
 
 # Project Licensing
 
