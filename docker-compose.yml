@@ -1,12 +1,14 @@
 version: '3'
 
 services:
-  apigaeway:
+  apigateway:
     container_name: apigateway
     restart: always
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./config.yml:/app/config.yml
     networks:
       - apigateway-network
     ports:
@@ -15,4 +17,3 @@ services:
 networks:
   apigateway-network:
     name: apigateway-network
-    driver: bridge

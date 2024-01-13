@@ -15,7 +15,7 @@ import (
 	"github.com/ermanimer/apigateway/pkg/server"
 )
 
-const configPath = "config.yaml"
+const configPath = "config.yml"
 
 func main() {
 	// create the logger
@@ -25,6 +25,7 @@ func main() {
 	c, err := config.ReadFromYaml(configPath)
 	if err != nil {
 		l.Error("failed to read config", "error", err)
+		os.Exit(1)
 	}
 
 	// create the server
@@ -58,6 +59,7 @@ func main() {
 	err = s.Shutdown()
 	if err != nil {
 		l.Error("failed to shutdown server", "error", err)
+		os.Exit(1)
 	}
 	l.Info("server stopped")
 }

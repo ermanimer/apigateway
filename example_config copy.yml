@@ -9,6 +9,3 @@ upstreams:
   - pattern: /service1/
     strip_prefix: true
     url: http://service1:8080
-  - pattern: /service2/
-    strip_prefix: false
-    url: http://service2:8080
