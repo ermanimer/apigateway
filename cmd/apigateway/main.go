@@ -59,6 +59,7 @@ func main() {
 	err = s.Shutdown()
 	if err != nil {
 		l.Error("failed to shutdown server", "error", err)
+		os.Exit(1)
 	}
 	l.Info("server stopped")
 }
