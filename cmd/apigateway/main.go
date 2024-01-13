@@ -18,7 +18,7 @@ import (
 const configPath = "config.yaml"
 
 func main() {
-	// create the l
+	// create the logger
 	l := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	// read the config
@@ -34,7 +34,7 @@ func main() {
 	s.RegisterHandler("/health-check", healthcheckhandler.New())
 	l.Info("health check handler is registered", "pattern", "/health-check")
 
-	// register upstream handlers
+	// register the upstream handlers
 	for _, u := range c.Upstreams {
 		s.RegisterHandler(u.Pattern, upstreamhandler.New(u))
 		l.Info("upstream handler is registered", "pattern", u.Pattern, "strip_prefix", u.StripPrefix, "url", u.URL)
@@ -53,7 +53,7 @@ func main() {
 		}
 	}()
 
-	// wait for the shutdown signal
+	// wait for the shutdown signal and stop the server
 	<-ctx.Done()
 	err = s.Shutdown()
 	if err != nil {
