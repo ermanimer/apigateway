@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/ermanimer/apigateway/graph/badge.svg?token=rbFp8CZIRk)](https://codecov.io/gh/ermanimer/apigateway)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ermanimer/apigateway)](https://goreportcard.com/report/github.com/ermanimer/apigateway)
 
-Apigateway is an API gateway designed for use in development environments or sandboxes. It follows these principles in its design:
+**apigateway** is an API gateway designed for use in development environments or sandboxes. It follows these principles in its design:
 
  - Its configuration is simple.
  - It can be used directly within Docker Compose.
