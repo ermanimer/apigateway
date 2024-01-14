@@ -4,17 +4,17 @@
 [![codecov](https://codecov.io/gh/ermanimer/apigateway/graph/badge.svg?token=rbFp8CZIRk)](https://codecov.io/gh/ermanimer/apigateway)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ermanimer/apigateway)](https://goreportcard.com/report/github.com/ermanimer/apigateway)
 
-apigateway development environment yada sandboxlarda kullanilmak uzere tasarlanmis bir api gatewaydir. Dizayn esnasinda asagidaki kararlari takip eder:
+Apigateway is an API gateway designed for use in development environments or sandboxes. It follows these principles in its design:
 
- - Konfigurasyonu basittir.
- - Docker compose icerisinden direkt olarak kullanilabilir.
- - Load balancing yapmaz.
- - Request ve response'lari degistirmez.
- - Standard kutuphanede bulunan reverse proxy'yi kullanir, verimliligi yuksektir.
+ - Its configuration is simple.
+ - It can be used directly within Docker Compose.
+ - It does not perform load balancing.
+ - It does not modify requests and responses.
+ - It leverages the reverse proxy provided in Go's standard library, ensuring optimal performance and efficiency.
 
- # Docker Compose Ile Kullanmak
+ # Using with Docker Compose
 
-docker-compose.yml
+**docker-compose.yml**
 
 ```yaml
 version: '3'
@@ -42,7 +42,7 @@ networks:
     name: apigateway-network
 ```
 
-config.yml
+**config.yml**
 
 ```yaml
 upstreams:
@@ -51,21 +51,21 @@ upstreams:
     url: http://service1:8080
 ```
 
-Bu konfigurasyona sahip docker-compose ile api gateway'e gelen /service1/ pattern'i ile baslayan tum istekler, service1'e pattern strip edilerek iletilecektir. Ornek:
+With this configuration in docker-compose, all requests starting with the **/service1/** pattern coming to the API gateway will be forwarded to service1 after stripping the pattern. For example:
 
 ```
 http://localhost:80/service1/health-check -> http://service1/8080/health-check:
 ```
 
-Eger strip_prefix false olsaydi api gateway'2 e gelen yukaridaki istek pattern strip edilmeden su sekilde service1'e iletilecekti.
+If ```strip_prefix``` was ```false```, the request coming to the API gateway as above would be forwarded to service1 without stripping the pattern, as follows:
 
 ```
 http://localhost:80/service1/health-check -> http://service1/service1/8080/health-check:
 ```
 
-# Konfigurasyon
+# Configuration
 
-Yukaridaki ornekte goruldugu gibi sadece upstream konfigurasyonu yeterlidir. Asagida server'a ait varsayilan konfigurasyon gosterilmistir. Istenildigi durumda server da konfigure edilebilir.
+As seen in the example above, only upstream configuration is sufficient. Below, the default configuration for the server is shown. If desired, the server can also be configured.
 
 ```yaml
 server:
@@ -82,7 +82,7 @@ upstreams:
 
 # Build And Run
 
-Go ile projeyi build etmek icin proje dizininde asagidaki komutlari calistirabilirsiniz.
+To build the project with Go, you can run the following commands in the project directory.
 
 **build:**
 
@@ -96,12 +96,12 @@ go build ./cmd/apigateway
 ./apigateway
 ```
 
-Not: apigateway bulundugu dizinde config.yml dosyasini arayacaktir.
+Note: apigateway always looks for the config.yml file in its directory.
 
-# Katilim
+# Contribution
 
-Bir issue acin ve istediginiz degisiklikler ve ozelliklere ortak karar verelim. Sonrasinda fork'ladiginiz repository'deki main branch'tan ana repository'deki main branch'e pull request acarak ilerleyebiliriz.
+Open an issue and let's collectively decide on the changes and features you want. Then, you can proceed by opening a pull request from the main branch of your forked repository to the main branch of the main repository.
 
-# Lisans
+# License
 
-Bu repo MIT lisansina sahiptir.
+This repo is under the MIT license.
